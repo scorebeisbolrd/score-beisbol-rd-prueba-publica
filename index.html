@@ -1070,7 +1070,7 @@ async function dmRefresh(){
   try{
     // Conservar los últimos marcadores mientras se consulta la fuente.
     dmPhase='consultar calendario';
-    const scheduleResponse=await fetch('/api/digimetrics?view=schedule&_='+Date.now(),{cache:'no-store'});
+    const localDate=new Date();const requestedDate=localDate.getFullYear()+'-'+String(localDate.getMonth()+1).padStart(2,'0')+'-'+String(localDate.getDate()).padStart(2,'0');\n    const scheduleResponse=await fetch('/api/digimetrics?view=schedule&date='+encodeURIComponent(requestedDate)+'&_='+Date.now(),{cache:'no-store'});
     const schedule=await scheduleResponse.json();
     if(!scheduleResponse.ok||!schedule.ok)throw new Error(schedule.error||'No se pudo leer el calendario');
     const games=(schedule.gameLinks||[]).slice(0,3);
@@ -1186,6 +1186,7 @@ async function dmRefresh(){
       status.textContent+=' Actualización automática detenida: todos los juegos están FINAL.';
     }
   }catch(error){
+    if(dmPhase==='consultar calendario'&&/fecha solicitada|fecha de calendario verificable/i.test(String(error&&error.message||''))){for(let n=1;n<=3;n++){const show=document.getElementById('show'+n);if(show)show.checked=false;}draw();}
     status.textContent='No se pudo actualizar la pizarra ('+dmPhase+'): '+(error&&error.message?error.message:'error de conexión')+'. Puedes seguir editando manualmente.';
     status.style.color='#ff9aa8';
   }finally{
